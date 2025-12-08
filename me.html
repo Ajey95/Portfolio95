@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJEYA-95 | The Manga Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Rajdhani:wght@500;700;800&family=VT323&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --manga-ink: #050510;
+            --manga-paper: #121220;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff0055;
+            --comic-yellow: #facc15;
+            --halftone-color: rgba(0, 243, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--manga-ink);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden; /* App-like feel */
+        }
+
+        /* --- MANGA FX --- */
+        .halftone-bg {
+            background-image: radial-gradient(var(--halftone-color) 2px, transparent 2px);
+            background-size: 20px 20px;
+            position: fixed; inset: 0; z-index: -1;
+        }
+
+        .comic-panel {
+            background: var(--manga-paper);
+            border: 3px solid var(--neon-cyan);
+            box-shadow: 8px 8px 0px 0px var(--neon-pink);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        .comic-panel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 12px 12px 0px 0px var(--neon-pink);
+        }
+
+        /* Special wrapper for character images */
+        .comic-image-wrapper {
+            position: relative;
+            border: 3px solid #000;
+            box-shadow: 6px 6px 0px var(--comic-yellow);
+            background: #fff;
+            overflow: hidden;
+        }
+        
+        .manga-img {
+            display: block;
+            width: 100%;
+            height: auto;
+            /* Optional: Multiply blend mode helps white backgrounds of sketches blend into white panels */
+            /* mix-blend-mode: multiply; */ 
+        }
+
+        .speed-lines {
+            position: absolute; inset: 0; pointer-events: none; opacity: 0.1;
+            background: repeating-linear-gradient(90deg, transparent, transparent 50px, #fff 50px, #fff 52px);
+            animation: speed 0.2s linear infinite;
+        }
+        @keyframes speed {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-52px); }
+        }
+
+        .comic-title {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0px var(--neon-pink);
+            -webkit-text-stroke: 1px black;
+        }
+        /* Adjust text shadow for mobile to be less overwhelming */
+        @media (max-width: 768px) {
+            .comic-title { text-shadow: 2px 2px 0px var(--neon-pink); }
+        }
+        
+        .pixel-font {
+            font-family: 'VT323', monospace;
+        }
+
+        /* Glitch Text Effect */
+        .glitch-text {
+            position: relative;
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--manga-ink);
+        }
+        .glitch-text::before {
+            left: 2px; text-shadow: -2px 0 var(--neon-pink);
+            clip-path: inset(0 0 0 0);
+            animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px; text-shadow: -2px 0 var(--neon-cyan);
+            clip-path: inset(0 0 0 0);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); }
+            100% { clip-path: inset(10% 0 60% 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); }
+            100% { clip-path: inset(20% 0 80% 0); }
+        }
+
+        .nav-btn {
+            font-family: 'Bangers', cursive;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            /* Cool corner clip */
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            white-space: nowrap; /* Prevent text wrapping on mobile */
+        }
+        .nav-btn.active {
+            background: var(--neon-cyan);
+            color: black;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #000; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--neon-pink); border: 2px solid black; }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+            height: 100%;
+        }
+        .page-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .speech-bubble {
+            background: white;
+            color: black;
+            padding: 8px 12px;
+            border-radius: 50%;
+            position: absolute;
+            font-family: 'Bangers', cursive;
+            font-size: 1rem;
+            animation: float 3s ease-in-out infinite;
+            border: 2px solid black;
+            z-index: 50;
+            white-space: nowrap;
+        }
+        @media (min-width: 768px) {
+            .speech-bubble { font-size: 1.2rem; padding: 10px 15px; }
+        }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: 0; left: 20%;
+            width: 0; height: 0;
+            border: 10px solid transparent;
+            border-top-color: white;
+            border-bottom: 0;
+            border-left: 0;
+            margin-left: -5px;
+            margin-bottom: -10px;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    </style>
+</head>
+<body class="flex flex-col h-screen md:flex-row">
+
+    <div class="halftone-bg"></div>
+
+    <!-- SIDEBAR NAV (Manga Spine Style) -->
+    <!-- Mobile: Top horizontal scroll. Desktop: Left sidebar. -->
+    <aside class="w-full md:w-64 bg-black border-b-2 md:border-b-0 md:border-r-4 border-white flex md:flex-col justify-between p-2 md:p-4 z-50 shrink-0">
+        <div class="mb-2 md:mb-6 hidden md:block">
+            <h1 class="text-4xl comic-title text-white leading-none">AJEYA<br><span class="text-cyan-400">95</span></h1>
+            <p class="pixel-font text-pink-500 mt-2">> AI_ARCHITECT.EXE</p>
+        </div>
+
+        <!-- Mobile Header (Visible only on small screens) -->
+        <div class="md:hidden flex justify-between items-center w-full mb-2">
+            <h1 class="text-2xl comic-title text-white">AJEYA<span class="text-cyan-400">95</span></h1>
+            <span class="pixel-font text-xs text-pink-500">> ONLINE</span>
+        </div>
+
+        <nav class="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible w-full pb-2 md:pb-0 scrollbar-hide">
+            <button onclick="switchPage('home')" class="nav-btn active p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">01. START</button>
+            <button onclick="switchPage('about')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">02. PROFILE</button>
+            <button onclick="switchPage('stack')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">03. ARSENAL</button>
+            <button onclick="switchPage('projects')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">04. MISSIONS</button>
+            <button onclick="switchPage('clubs')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">05. ALLIANCE</button>
+            <button onclick="switchPage('certs')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">06. CREDENTIALS</button>
+            <button onclick="switchPage('contact')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">07. CONTACT</button>
+        </nav>
+
+        <div class="hidden md:block mt-6">
+            <div class="comic-panel p-2 text-center">
+                <span class="pixel-font text-xs text-cyan-400">SYNC STATUS: 100%</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 relative overflow-hidden h-full">
+        <div class="absolute inset-0 p-4 md:p-8 custom-scroll overflow-y-auto pb-24 md:pb-8">
+
+            <!-- PAGE 01: HOME -->
+            <section id="home" class="page-section active h-full justify-center items-center">
+                <div class="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    
+                    <!-- Hero Text -->
+                    <div class="comic-panel p-6 md:p-12 bg-[#0a0a15] text-center md:text-left border-white relative z-10 order-2 md:order-1">
+                        <div class="speed-lines"></div>
+                        <div class="mb-4 inline-block px-4 py-1 bg-pink-500 text-black font-bold transform -rotate-2 pixel-font text-lg md:text-xl border-2 border-black relative z-20">
+                            VOL. 2025 - ISSUE #1
+                        </div>
+                        <h1 class="text-5xl md:text-8xl comic-title text-white mb-2 leading-[0.85] glitch-text relative z-20" data-text="NEURAL ARCHITECT">
+                            NEURAL<br><span class="text-cyan-400">ARCHITECT</span>
+                        </h1>
+                        <div class="h-1 w-full bg-gradient-to-r from-pink-500 via-cyan-400 to-pink-500 my-4 md:my-6 relative z-20"></div>
+                        <p class="text-lg md:text-xl font-bold text-gray-300 font-sans tracking-wide mb-6 md:mb-8 relative z-20">
+                            Constructing <span class="text-pink-500 bg-black px-1">Agentic Workflows</span> & <span class="text-cyan-400 bg-black px-1">LLM Pipelines</span>. Bridging ancient wisdom with synthetic intelligence.
+                        </p>
+                        <div class="flex flex-wrap gap-4 relative z-20 justify-center md:justify-start">
+                            <a href="https://drive.google.com/file/d/1pj-uVfqhmNFyuwjzSxwMUChkYXGTNGoK/view?usp=drive_link" download class="group relative inline-block">
+                                <span class="absolute inset-0 bg-cyan-400 translate-x-1 translate-y-1 border-2 border-black"></span>
+                                <span class="relative block border-2 border-black bg-white px-6 py-2 text-black font-black uppercase tracking-widest hover:-translate-y-1 hover:-translate-x-1 transition-transform text-sm md:text-base">
+                                    DOWNLOAD DATA
+                                </span>
+                            </a>
+                            <button onclick="switchPage('projects')" class="group relative inline-block">
+                                <span class="absolute inset-0 bg-pink-500 translate-x-1 translate-y-1 border-2 border-black"></span>
+                                <span class="relative block border-2 border-black bg-gray-900 px-6 py-2 text-white font-black uppercase tracking-widest hover:-translate-y-1 hover:-translate-x-1 transition-transform text-sm md:text-base">
+                                    START MISSION
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hero Image (Game Station) -->
+                    <div class="relative order-1 md:order-2 flex justify-center py-6 md:py-0">
+                         <div class="speech-bubble" style="top: -10px; right: 10%;">
+                            SYSTEM ONLINE!
+                        </div>
+                        <div class="comic-image-wrapper transform rotate-2 hover:rotate-0 transition-transform duration-300 max-w-[250px] md:max-w-full">
+                            <img src="Transhumans - Gamestation.png" alt="Manga Character with Game Boy" class="manga-img max-h-[300px] md:max-h-[500px] object-cover" onerror="this.src='https://placehold.co/400x500/yellow/purple?text=Load+Image'">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 02: ABOUT -->
+            <section id="about" class="page-section">
+                <h2 class="text-4xl md:text-6xl comic-title text-white mb-6 md:mb-8">
+                    <span class="text-pink-500">#</span> PILOT PROFILE
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    
+                    <!-- Avatar Panel -->
+                    <div class="md:col-span-4 comic-panel bg-white p-2 relative group">
+
+                        <!-- UNIT Badge -->
+                        <div class="absolute top-2 left-2 z-20 bg-black text-white px-2 font-bold pixel-font border border-white">
+                            UNIT-95
+                        </div>
+
+                        <!-- Image Container (auto height) -->
+                        <div class="bg-yellow-400 overflow-hidden border-2 border-black flex justify-center items-center">
+
+                            <!-- FIXED IMAGE SIZING -->
+                            <img src="mask.png"
+                                alt="Manga Character Walking"
+                                class="w-full h-auto max-h-[420px] object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                                onerror="this.src='https://placehold.co/300x400/yellow/purple?text=Load+Image'">
+                        </div>
+                    </div>
+
+
+                    <!-- Stats Panel -->
+                    <div class="md:col-span-8 space-y-6">
+                        <div class="comic-panel p-4 md:p-6">
+                            <h3 class="text-2xl md:text-3xl font-bold text-cyan-400 mb-4 font-sans italic">IDENTITY LOG</h3>
+                            <ul class="space-y-3 font-sans text-base md:text-lg tracking-wide">
+                                <li class="flex flex-col md:flex-row md:items-center border-b border-gray-800 pb-2">
+                                    <span class="w-32 text-gray-500 font-bold">NAME:</span>
+                                    <span class="text-white">Ajay Bhargava Jashwanth Reddy</span>
+                                </li>
+                                <li class="flex flex-col md:flex-row md:items-center border-b border-gray-800 pb-2">
+                                    <span class="w-32 text-gray-500 font-bold">CLASS:</span>
+                                    <span class="text-white">AI/ML Architect</span>
+                                </li>
+                                <li class="flex flex-col md:flex-row md:items-center border-b border-gray-800 pb-2">
+                                    <span class="w-32 text-gray-500 font-bold">BASE:</span>
+                                    <span class="text-white">India</span>
+                                </li>
+                                <li class="flex flex-col md:flex-row md:items-center border-b border-gray-800 pb-2">
+                                    <span class="w-32 text-gray-500 font-bold">EDUCATION:</span>
+                                    <span class="text-white">Amrita Vishwa Vidyapeetham</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="comic-panel p-4 md:p-6 bg-pink-900/10">
+                            <h3 class="text-2xl md:text-3xl font-bold text-pink-500 mb-2 font-sans italic">MISSION STATEMENT</h3>
+                            <p class="text-gray-300 leading-relaxed text-base md:text-lg font-medium">
+                                "To construct truthful systems and apply MLOps practices for scalable deployment. My goal is to ensure technology serves humanity's core values, bridging the gap between <span class="text-white bg-pink-600 px-1">Ancient Wisdom</span> and <span class="text-black bg-cyan-400 px-1">Future Logic</span>."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Panels (Restored) -->
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="comic-panel p-4 md:p-6 hover:bg-white/5">
+                        <div class="pixel-font text-xl text-cyan-400 mb-2">> CURRENTLY</div>
+                        <h4 class="text-2xl font-black font-sans mb-1">AI DEVELOPER</h4>
+                        <p class="text-sm text-gray-400 font-bold">IIIT Hyderabad Swecha</p>
+                        <p class="text-xs mt-2 text-gray-300">Building first Telugu LLM foundation model. 100k+ student data collection.</p>
+                    </div>
+                    <div class="comic-panel p-4 md:p-6 hover:bg-white/5">
+                        <div class="pixel-font text-xl text-pink-500 mb-2">> SUMMER 2025</div>
+                        <h4 class="text-2xl font-black font-sans mb-1">VIRTUAL INTERN</h4>
+                        <p class="text-sm text-gray-400 font-bold">BPM New Zealand</p>
+                        <p class="text-xs mt-2 text-gray-300">Cross-functional international collaboration. Global project management.</p>
+                    </div>
+                    <div class="comic-panel p-4 md:p-6 hover:bg-white/5">
+                        <div class="pixel-font text-xl text-yellow-400 mb-2">> SPRING 2025</div>
+                        <h4 class="text-2xl font-black font-sans mb-1">CONTENT DESIGNER</h4>
+                        <p class="text-sm text-gray-400 font-bold">Charaibeti Project</p>
+                        <p class="text-xs mt-2 text-gray-300">Translated SOPs for special-needs education. Accessibility optimization.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 03: STACK -->
+            <section id="stack" class="page-section">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8">
+                    <h2 class="text-4xl md:text-6xl comic-title text-white"><span class="text-cyan-400">#</span> WEAPON ARSENAL</h2>
+                    <!-- Decorative mini image -->
+                    <div class="hidden md:block w-24 h-24 border-2 border-cyan-400 rounded-full overflow-hidden bg-white">
+                        <img src="mask2.png" class="w-full h-full object-cover transform scale-160 translate-y-2">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Column 1 -->
+                    <div class="space-y-8">
+                        <div class="comic-panel p-0">
+                            <div class="bg-pink-600 p-2 border-b-2 border-black">
+                                <h3 class="font-black text-black text-xl text-center font-sans">AI CORE</h3>
+                            </div>
+                            <div class="p-6 bg-[#1a1a2e]">
+                                <ul class="space-y-2 pixel-font text-xl text-pink-300">
+                                    <li>> PyTorch</li>
+                                    <li>> TensorFlow</li>
+                                    <li>> HuggingFace</li>
+                                    <li>> LangChain</li>
+                                    <li>> LlamaIndex</li>
+                                    <li>> FAISS</li>
+                                    <li>> OpenCV</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2 -->
+                    <div class="space-y-8">
+                        <div class="comic-panel p-0">
+                            <div class="bg-cyan-400 p-2 border-b-2 border-black">
+                                <h3 class="font-black text-black text-xl text-center font-sans">INFRASTRUCTURE</h3>
+                            </div>
+                            <div class="p-6 bg-[#1a1a2e]">
+                                <ul class="space-y-2 pixel-font text-xl text-cyan-200">
+                                    <li>> Python</li>
+                                    <li>> FastAPI / Flask</li>
+                                    <li>> Docker</li>
+                                    <li>> Kubernetes</li>
+                                    <li>> Azure AI</li>
+                                    <li>> EdgeX Foundry</li>
+                                    <li>> STM32</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 3 -->
+                    <div class="space-y-8">
+                        <div class="comic-panel p-0">
+                            <div class="bg-yellow-400 p-2 border-b-2 border-black">
+                                <h3 class="font-black text-black text-xl text-center font-sans">LANGUAGES</h3>
+                            </div>
+                            <div class="p-6 bg-[#1a1a2e]">
+                                <ul class="space-y-2 pixel-font text-xl text-yellow-200">
+                                    <li>> Python</li>
+                                    <li>> TypeScript</li>
+                                    <li>> Java</li>
+                                    <li>> C / Embedded C</li>
+                                    <li>> Haskell</li>
+                                    <li>> SQL</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 04: PROJECTS -->
+            <section id="projects" class="page-section">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex flex-col">
+                         <h2 class="text-4xl md:text-6xl comic-title text-white"><span class="text-yellow-400">#</span> MISSION LOGS</h2>
+                         <span class="pixel-font text-lg text-gray-400 block md:hidden mt-1">TOTAL: 8 DEPLOYMENTS</span>
+                    </div>
+                   
+                    <div class="hidden md:flex items-center gap-4">
+                         <span class="pixel-font text-xl text-gray-400">TOTAL: 8 DEPLOYMENTS</span>
+                         <!-- Decorative mini image -->
+                         <!-- <div class="w-16 h-16 border-2 border-yellow-400 rounded-full overflow-hidden">
+                            <img src="mask.png" class="w-full h-full object-cover grayscale">
+                        </div> -->
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Project 1: TechTony -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                             <div class="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,#000,#000_10px,#111_10px,#111_20px)]"></div>
+                             <i data-lucide="zap" class="w-16 h-16 text-yellow-400 relative z-10"></i>
+                             <div class="absolute top-2 right-2 bg-yellow-400 text-black font-bold text-xs px-2 border border-black transform rotate-2">CAPSTONE</div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">TECHTONY</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">End-to-end IoT healthcare framework. Features autoscaling, EdgeX data ingestion, and Federated Learning loops on Kubernetes clusters.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">EdgeX</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">K8s</span>
+                            </div>
+                            <a href="https://github.com/23CSE362-edge-computing-2025-26-odd/capstone-project-05_techtony" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
+                        </div>
+                    </div>
+
+                    <!-- Project 2: TrolleyMakers -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(-45deg,#000,#000_10px,#111_10px,#111_20px)]"></div>
+                             <i data-lucide="shopping-cart" class="w-16 h-16 text-blue-400 relative z-10"></i>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">TROLLEYMAKERS</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">Automated billing system using STM32F401 & RFID. Eliminates queues with instant tracking and real-time weight verification.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">STM32</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">RFID</span>
+                            </div>
+                            <a href="https://github.com/Ajey95/TrolleyMakers" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
+                        </div>
+                    </div>
+
+                    <!-- Project 3: Mission to Mars -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                             <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle,#333_1px,transparent_1px)] bg-[length:10px_10px]"></div>
+                             <i data-lucide="rocket" class="w-16 h-16 text-red-500 relative z-10"></i>
+                             <div class="absolute top-2 right-2 bg-red-500 text-white font-bold text-xs px-2 border border-black transform -rotate-2">GAME</div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">MISSION TO MARS</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">Competitive multiplayer elimination game. Teams solve logic puzzles generated by a sentient Mars AI using Groq API.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Groq</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">React</span>
+                            </div>
+                            <a href="https://github.com/Tensor-Amrita-Coimbatore/Mission-to-Mars" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
+                        </div>
+                    </div>
+
+                    <!-- Project 4: Sibyl System -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                             <i data-lucide="eye" class="w-16 h-16 text-purple-500 relative z-10"></i>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">SIBYL SYSTEM</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">Privacy-focused, offline RAG system for document Q&A. Runs locally on NVIDIA GPUs using TinyLlama-1.1B and FAISS.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Local RAG</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">TinyLlama</span>
+                            </div>
+                            <a href="https://github.com/Ajey95/Sibyl-System" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
+                        </div>
+                    </div>
+
+                    <!-- Project 5: TypeSymphony -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                             <i data-lucide="keyboard" class="w-16 h-16 text-slate-300 relative z-10"></i>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">TYPESYMPHONY</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">Immersive typing app blending Indian storytelling with gamification. Features Holi visuals and real-time analytics.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">React</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Vite</span>
+                            </div>
+                            <a href="https://github.com/Ajey95/Cyberknights" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
+                        </div>
+                    </div>
+
+                    <!-- Project 6: MyPharmaAI -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                             <i data-lucide="stethoscope" class="w-16 h-16 text-green-400 relative z-10"></i>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">MYPHARMA AI</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">AI assistant for pharmaceutical domain expertise, drug interaction checks, and clinical data analysis using specialized LLMs.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Medical NLP</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">HuggingFace</span>
+                            </div>
+                            <a href="https://huggingface.co/spaces/Ajeya95/MyPharmaAI" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> LAUNCH SPACE</a>
+                        </div>
+                    </div>
+
+                    <!-- Project 7: ResearchCopilot -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                             <i data-lucide="bot" class="w-16 h-16 text-pink-500 relative z-10"></i>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">RESEARCH COPILOT</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">Automated research assistant using Model Context Protocol (MCP). Handles literature reviews via agent collaboration.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">MCP</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Agents</span>
+                            </div>
+                            <a href="https://huggingface.co/spaces/Agents-MCP-Hackathon/ResearchCopilot" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> LAUNCH SPACE</a>
+                        </div>
+                    </div>
+
+                    <!-- Project 8: KarmaCheck -->
+                    <div class="comic-panel group hover:z-10">
+                        <div class="h-32 bg-gray-900 border-b-2 border-cyan-400 flex items-center justify-center relative overflow-hidden">
+                             <i data-lucide="scroll-text" class="w-16 h-16 text-cyan-400 relative z-10"></i>
+                             <div class="absolute top-2 right-2 bg-yellow-400 text-black font-bold text-xs px-2 border border-black transform rotate-2">VEDIC</div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-2xl font-black font-sans text-white mb-2">KARMA CHECK</h3>
+                            <p class="text-sm font-medium text-gray-400 mb-4 line-clamp-3">MCP Server providing spiritual guidance based on Vedic philosophy and karma principles. Integrates ancient wisdom with modern AI.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">MCP Server</span>
+                                <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Vedic AI</span>
+                            </div>
+                            <a href="https://huggingface.co/spaces/Agents-MCP-Hackathon/KarmaCheck" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> LAUNCH SPACE</a>
+                        </div>
+                    </div>
+                    <div class="hidden lg:flex items-end justify-center border-b-2 border-yellow-400 overflow-hidden h-72 ">
+                        <img src="Transhumans - Pacheco.png" class="h-full w-auto object-contain opacity-80 grayscale">
+                    </div>
+
+
+                </div>
+                <!-- Decorative Right-Side Character -->
+                <!-- <div class="hidden md:block fixed right-0 top-0 h-full w-[260px] pointer-events-none flex items-end justify-center pr-4">
+                    <img src="mask.png"
+                        class="h-[80%] w-auto object-contain opacity-80 grayscale" />
+                </div> -->
+
+            </section>
+
+             <!-- PAGE 05: CLUBS -->
+             <section id="clubs" class="page-section">
+                <h2 class="text-4xl md:text-6xl comic-title text-white mb-8"><span class="text-pink-500">#</span> NEURAL ALLIANCE</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <!-- ARYA CLUB -->
+                    <div class="comic-panel p-6 md:p-8 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-yellow-900/10 group-hover:bg-yellow-900/20 transition"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="bg-yellow-500 text-black p-2 md:p-3 border-2 border-black transform -rotate-3">
+                                    <i data-lucide="sun" class="w-6 h-6 md:w-8 md:h-8"></i>
+                                </div>
+                                <div class="pixel-font text-yellow-500 text-base md:text-lg">STATUS: ACTIVE</div>
+                            </div>
+                            
+                            <h3 class="text-3xl md:text-4xl comic-title text-white mb-2" style="text-shadow: 2px 2px 0 #ca8a04;">ARYA CLUB</h3>
+                            <div class="bg-white text-black inline-block px-2 font-bold text-sm mb-6 border-2 border-black">ROLE: TECHNICAL LEAD</div>
+                            
+                            <p class="text-gray-300 leading-relaxed font-sans text-base md:text-lg">
+                                Core motive: Promoting <span class="text-yellow-400 font-bold">Indian Heritage</span> and <span class="text-yellow-400 font-bold">Vedic Sciences</span>. 
+                                We engineer interfaces that make ancient wisdom engaging, meaningful, and computationally relevant for the modern era.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- TENSOR CLUB -->
+                    <div class="comic-panel p-6 md:p-8 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-purple-900/10 group-hover:bg-purple-900/20 transition"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="bg-purple-500 text-white p-2 md:p-3 border-2 border-black transform rotate-2">
+                                    <i data-lucide="brain-circuit" class="w-6 h-6 md:w-8 md:h-8"></i>
+                                </div>
+                                <div class="pixel-font text-purple-400 text-base md:text-lg">STATUS: ACTIVE</div>
+                            </div>
+                            
+                            <h3 class="text-3xl md:text-4xl comic-title text-white mb-2" style="text-shadow: 2px 2px 0 #9333ea;">TENSOR AI CLUB</h3>
+                            <div class="bg-white text-black inline-block px-2 font-bold text-sm mb-6 border-2 border-black">ROLE: R&D CORE</div>
+                            
+                            <p class="text-gray-300 leading-relaxed font-sans text-base md:text-lg">
+                                Mission: <span class="text-purple-400 font-bold">Exploration & Prototyping</span>. 
+                                We provide hands-on learning and industry exposure, building collaborative AI projects that are practical and socially impactful.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 06: CERTIFICATES -->
+            <section id="certs" class="page-section">
+                <h2 class="text-4xl md:text-6xl comic-title text-white mb-8"><span class="text-green-500">#</span> CREDENTIALS</h2>
+                <div class="space-y-4 max-w-4xl mx-auto">
+                    <!-- Cert 1 -->
+                    <div class="comic-panel p-4 flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#151525]">
+                        <div class="p-3 bg-cyan-900 border-2 border-cyan-500 text-cyan-400">
+                            <i data-lucide="award" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg md:text-xl font-black text-white font-sans">Microsoft Azure AI Fundamentals</h4>
+                            <p class="text-xs md:text-sm text-gray-400 pixel-font">> AI-900 CERTIFICATION | 2025</p>
+                        </div>
+                    </div>
+
+                    <!-- Cert 2 -->
+                    <div class="comic-panel p-4 flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#151525]">
+                        <div class="p-3 bg-pink-900 border-2 border-pink-500 text-pink-400">
+                            <i data-lucide="book-open" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg md:text-xl font-black text-white font-sans">AI Agents Course Fundamentals</h4>
+                            <p class="text-xs md:text-sm text-gray-400 pixel-font">> HUGGING FACE | 2025</p>
+                        </div>
+                    </div>
+
+                    <!-- Cert 3 -->
+                    <div class="comic-panel p-4 flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#151525]">
+                        <div class="p-3 bg-yellow-900 border-2 border-yellow-500 text-yellow-400">
+                            <i data-lucide="code-2" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg md:text-xl font-black text-white font-sans">GenAI X Gender Tech Hackathon</h4>
+                            <p class="text-xs md:text-sm text-gray-400 pixel-font">> CERTIFICATE OF PARTICIPATION | 2025</p>
+                        </div>
+                    </div>
+
+                    <!-- Cert 4 -->
+                    <div class="comic-panel p-4 flex flex-col md:flex-row items-start md:items-center gap-4 bg-[#151525]">
+                        <div class="p-3 bg-green-900 border-2 border-green-500 text-green-400">
+                            <i data-lucide="globe" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg md:text-xl font-black text-white font-sans">Model United Nations</h4>
+                            <p class="text-xs md:text-sm text-gray-400 pixel-font">> AMRITA UNIVERSITY | CERTIFICATE OF APPRECIATION</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 07: CONTACT (IMAGE 5: Reusing Gamestation) -->
+            <section id="contact" class="page-section">
+                <h2 class="text-4xl md:text-6xl comic-title text-white mb-8 "><span class="text-yellow-500">#</span> ESTABLISH CONNECTION</h2>
+                <div class="h-full flex flex-col justify-center items-center relative py-10">
+                    <!-- Background decor -->
+                    <img src="Transhumans - Gamestation.png" class="absolute opacity-10 top-10 left-0 md:left-10 w-48 md:w-64 grayscale pointer-events-none">
+
+                    <div class="comic-panel p-8 md:p-12 text-center bg-black/90 max-w-3xl w-full relative z-10">
+                        <div class="mb-8">
+                            <i data-lucide="radio-tower" class="w-16 h-16 md:w-24 md:h-24 text-cyan-400 mx-auto animate-pulse"></i>
+                        </div>
+                        
+                        <div class="flex flex-wrap justify-center gap-6 mb-12">
+                            <a href="https://github.com/Ajey95" target="_blank" class="p-4 md:p-6 border-2 border-cyan-500 bg-cyan-900/30 text-cyan-400 hover:bg-cyan-500 hover:text-black hover:scale-105 transition-all transform duration-200 w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center gap-2 rounded-lg">
+                                <i data-lucide="github" class="w-8 h-8 md:w-10 md:h-10"></i>
+                                <span class="font-bold font-sans text-sm md:text-base">GITHUB</span>
+                            </a>
+                            <a href="https://linkedin.com/in/ajeyabhargava-jashwanth-reddy-aa1a57270" target="_blank" class="p-4 md:p-6 border-2 border-blue-500 bg-blue-900/30 text-blue-400 hover:bg-blue-500 hover:text-black hover:scale-105 transition-all transform duration-200 w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center gap-2 rounded-lg">
+                                <i data-lucide="linkedin" class="w-8 h-8 md:w-10 md:h-10"></i>
+                                <span class="font-bold font-sans text-sm md:text-base">LINKEDIN</span>
+                            </a>
+                            <a href="mailto:983617reddy@gmail.com" class="p-4 md:p-6 border-2 border-pink-500 bg-pink-900/30 text-pink-400 hover:bg-pink-500 hover:text-black hover:scale-105 transition-all transform duration-200 w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center gap-2 rounded-lg">
+                                <i data-lucide="mail" class="w-8 h-8 md:w-10 md:h-10"></i>
+                                <span class="font-bold font-sans text-sm md:text-base">EMAIL</span>
+                            </a>
+                            <a href="https://huggingface.co/Ajeya95" target="_blank" class="p-4 md:p-6 border-2 border-yellow-500 bg-yellow-900/30 text-yellow-400 hover:bg-yellow-500 hover:text-black hover:scale-105 transition-all transform duration-200 w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center gap-2 rounded-lg">
+                                <span class="font-bold text-xl md:text-2xl font-sans">HF</span>
+                                <span class="font-bold font-sans text-[10px] md:text-xs">HUGGINGFACE</span>
+                            </a>
+                        </div>
+
+                        <div class="h-1 w-full max-w-md mx-auto bg-gradient-to-r from-transparent via-gray-700 to-transparent mb-6"></div>
+
+                        <p class="text-gray-500 text-[10px] md:text-xs pixel-font tracking-widest">
+                            SYSTEM ID: AJEYA-95 | DESIGN: MANGA-OS V1.0<br>
+                            &copy; 2025 ALL RIGHTS RESERVED
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
