@@ -1,0 +1,19 @@
+{
+  "papers": [
+    {
+      "title": "RAG Optimization Strategies",
+      "summary": "Improving retrieval fidelity in long-context RAG systems.",
+      "tags": ["RAG", "Retrieval", "Optimization"]
+    },
+    {
+      "title": "Agent Frameworks 2024",
+      "summary": "Chain-of-thought vs tool-calling efficiency.",
+      "tags": ["Agents", "MCP", "Tool Use"]
+    },
+    {
+      "title": "TinyLlama Scaling Laws",
+      "summary": "Insights from training compact 1B-parameter models.",
+      "tags": ["LLMs", "Scaling Laws"]
+    }
+  ]
+}
