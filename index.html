@@ -280,6 +280,15 @@
     50% { opacity: 1; transform: scale(1); }
 }
 
+/* Adjust text shadow for mobile to be less overwhelming */
+@media (max-width: 768px) {
+    .comic-title { text-shadow: 2px 2px 0px var(--neon-pink); }
+}
+         
+/* Mobile: Ensure nav doesn't wrap awkwardly */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
     </style>
 </head>
 <body class="flex flex-col h-screen md:flex-row">
