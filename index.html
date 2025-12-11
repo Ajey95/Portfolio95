@@ -7,6 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Rajdhani:wght@500;700;800&family=VT323&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- ONNX Runtime -->
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+
+<!-- TensorFlow.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+
     <style>
         :root {
             --manga-ink: #050510;
@@ -175,6 +181,105 @@
         }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
+        /* Robot Animation Styles */
+.robot-container {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    height: 150px;
+    pointer-events: none;
+}
+
+.robot {
+    position: absolute;
+    width: 80px;
+    height: auto;
+    image-rendering: pixelated;
+    bottom: 0;
+}
+
+.robot-blue {
+    left: -100px;
+    animation: moveBlueRobot 8s ease-in-out infinite;
+}
+
+.robot-pink {
+    right: -100px;
+    animation: movePinkRobot 8s ease-in-out infinite;
+    transform: scaleX(-1);
+}
+
+@keyframes moveBlueRobot {
+    0%, 100% { left: -100px; }
+    45%, 55% { left: calc(50% - 80px); }
+}
+
+@keyframes movePinkRobot {
+    0%, 100% { right: -100px; }
+    45%, 55% { right: calc(50% - 80px); }
+}
+
+.heart {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    width: 50px;
+    height: 50px;
+    opacity: 0;
+    animation: heartAppear 8s ease-in-out infinite;
+    image-rendering: pixelated;
+}
+
+@keyframes heartAppear {
+    0%, 44%, 56%, 100% {
+        transform: translateX(-50%) scale(0);
+        opacity: 0;
+    }
+    48%, 52% {
+        transform: translateX(-50%) scale(1.3);
+        opacity: 1;
+    }
+}
+
+/* Sparkle effect */
+.sparkles {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    opacity: 0;
+    animation: sparkle 8s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 44%, 56%, 100% { opacity: 0; }
+    48%, 52% { opacity: 1; }
+}
+
+.sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #fde047;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #fde047;
+}
+
+.sparkle:nth-child(1) { top: 10px; left: 20px; animation: twinkle 0.6s ease-in-out infinite; }
+.sparkle:nth-child(2) { top: 30px; right: 15px; animation: twinkle 0.6s ease-in-out infinite 0.2s; }
+.sparkle:nth-child(3) { bottom: 20px; left: 30px; animation: twinkle 0.6s ease-in-out infinite 0.4s; }
+.sparkle:nth-child(4) { bottom: 35px; right: 25px; animation: twinkle 0.6s ease-in-out infinite 0.1s; }
+.sparkle:nth-child(5) { top: 50%; left: 10px; animation: twinkle 0.6s ease-in-out infinite 0.3s; }
+.sparkle:nth-child(6) { top: 50%; right: 10px; animation: twinkle 0.6s ease-in-out infinite 0.5s; }
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
     </style>
 </head>
 <body class="flex flex-col h-screen md:flex-row">
@@ -201,8 +306,12 @@
             <button onclick="switchPage('stack')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">03. ARSENAL</button>
             <button onclick="switchPage('projects')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">04. MISSIONS</button>
             <button onclick="switchPage('clubs')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">05. ALLIANCE</button>
-            <button onclick="switchPage('certs')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">06. CREDENTIALS</button>
-            <button onclick="switchPage('contact')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">07. CONTACT</button>
+            <button onclick="switchPage('modelzoo')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">06. MODELZOO</button>
+            <button onclick="switchPage('radar')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">07. RESEARCH RADAR</button>
+            <button onclick="switchPage('certs')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">08. CREDENTIALS</button>
+            <button onclick="switchPage('contact')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">09. CONTACT</button>
+            <!-- <button onclick="switchPage('blueprints')" class="nav-btn p-2 md:p-3 bg-gray-900 border border-gray-700 hover:bg-gray-800 text-center md:text-left min-w-[100px] md:w-full text-sm md:text-base">09. NEURAL BLUEPRINT</button> -->
+
         </nav>
 
         <div class="hidden md:block mt-6">
@@ -450,6 +559,8 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">EdgeX</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">K8s</span>
                             </div>
+                            <a href="https://youtu.be/G9MaDoYZYcY" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
+
                             <a href="https://github.com/23CSE362-edge-computing-2025-26-odd/capstone-project-05_techtony" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
                         </div>
                     </div>
@@ -467,6 +578,7 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">STM32</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">RFID</span>
                             </div>
+                            <a href="https://drive.google.com/file/d/1GBit8f9NPwR1oehuKWIvypUhTIFvkYHg/view?usp=sharing" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
                             <a href="https://github.com/Ajey95/TrolleyMakers" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
                         </div>
                     </div>
@@ -485,6 +597,7 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Groq</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">React</span>
                             </div>
+                                                        <a href="https://youtu.be/UeJvo70lnJw?feature=shared" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
                             <a href="https://github.com/Tensor-Amrita-Coimbatore/Mission-to-Mars" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
                         </div>
                     </div>
@@ -501,6 +614,7 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Local RAG</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">TinyLlama</span>
                             </div>
+                                                        <a href="#" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
                             <a href="https://github.com/Ajey95/Sibyl-System" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
                         </div>
                     </div>
@@ -517,6 +631,7 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">React</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Vite</span>
                             </div>
+                                                        <a href="#" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
                             <a href="https://github.com/Ajey95/Cyberknights" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> ACCESS CODE</a>
                         </div>
                     </div>
@@ -533,6 +648,7 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Medical NLP</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">HuggingFace</span>
                             </div>
+                                                        <a href="#" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
                             <a href="https://huggingface.co/spaces/Ajeya95/MyPharmaAI" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> LAUNCH SPACE</a>
                         </div>
                     </div>
@@ -549,6 +665,7 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">MCP</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Agents</span>
                             </div>
+                                                        <a href="https://youtu.be/SuBUxtBKUvQ" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
                             <a href="https://huggingface.co/spaces/Agents-MCP-Hackathon/ResearchCopilot" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> LAUNCH SPACE</a>
                         </div>
                     </div>
@@ -566,6 +683,7 @@
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">MCP Server</span>
                                 <span class="bg-gray-800 text-cyan-300 text-xs px-2 py-1 font-bold border border-gray-600">Vedic AI</span>
                             </div>
+                                                        <a href="https://youtu.be/4XG0SDb7BTw" target="_blank" class="block w-full text-center bg-red-900 hover:bg-red-500 text-white hover:text-black py-2 font-bold transition-colors mb-2">>> WATCH DEMO</a>
                             <a href="https://huggingface.co/spaces/Agents-MCP-Hackathon/KarmaCheck" target="_blank" class="block w-full text-center bg-cyan-900 hover:bg-cyan-500 text-white hover:text-black py-2 font-bold transition-colors">>> LAUNCH SPACE</a>
                         </div>
                     </div>
@@ -582,6 +700,50 @@
                 </div> -->
 
             </section>
+            <!-- PAGE: RESEARCH RADAR -->
+            <section id="radar" class="page-section">
+                <h2 class="text-4xl md:text-6xl comic-title text-white mb-8">
+                    <span class="text-green-400">#</span> RESEARCH RADAR
+                </h2>
+
+                <div class="space-y-8">
+
+                    <!-- Latest Papers -->
+                    <div class="comic-panel p-6 bg-[#101020]">
+                        <h3 class="text-2xl font-black text-green-400 mb-4 font-sans">LATEST PAPERS</h3>
+
+                        <ul id="latest-papers" class="space-y-3 text-gray-300 font-sans">
+                            <li>> Loading research papers...</li>
+                        </ul>
+
+                        <p class="pixel-font text-green-300 mt-4">> Auto-updated from research.json</p>
+                    </div>
+
+
+                    <!-- Interest Map -->
+                    <div class="comic-panel p-6 bg-[#101020]">
+                        <h3 class="text-2xl font-black text-yellow-400 mb-4 font-sans">RESEARCH INTEREST MAP</h3>
+                        <p class="text-gray-300 leading-relaxed">
+                            RAG Systems → Vedic AI → Motion Detection → Agentic Workflows → Model Compression → 
+                            Optimization → Distributed Inference → VLMs → Ethical AI
+                        </p>
+                    </div>
+
+                    <!-- Experiments -->
+                    <div class="comic-panel p-6 bg-[#101020]">
+                        <h3 class="text-2xl font-black text-pink-500 mb-4 font-sans">CURRENT EXPERIMENTS</h3>
+                        <ul class="space-y-2 text-gray-300 font-sans">
+                            <li>> Fine-tuning on Mistral API</li>
+                            <li>> Groq-based RAG pipeline latency tests</li>
+                            <li>> MCP agent orchestration</li>
+                            <li>> Motion estimation using Horn–Schunck</li>
+                        </ul>
+                        <p class="pixel-font text-pink-300 mt-4">> Updated weekly based on research logs.</p>
+                    </div>
+
+                </div>
+            </section>
+
 
              <!-- PAGE 05: CLUBS -->
              <section id="clubs" class="page-section">
@@ -630,6 +792,92 @@
                     </div>
                 </div>
             </section>
+            <!-- PAGE: MODEL ZOO -->
+            <section id="modelzoo" class="page-section">
+                <h2 class="text-4xl md:text-6xl comic-title text-white mb-8">
+                    <span class="text-yellow-400">#</span> MODEL ZOO LAB
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                    <!-- SENTIMENT DEMO -->
+                    <div class="comic-panel p-6 bg-[#151525]">
+                        <h3 class="text-xl font-black text-cyan-400 mb-3 font-sans">SENTIMENT CLASSIFIER</h3>
+
+                        <textarea id="sent-input" class="w-full p-2 bg-black border border-cyan-500 text-gray-300 h-24 text-sm"></textarea>
+
+                        <button onclick="runSentiment()" class="mt-3 w-full bg-cyan-900 text-white py-2 hover:bg-cyan-500 hover:text-black font-bold transition">
+                            >> RUN MODEL
+                        </button>
+
+                        <p id="sent-output" class="pixel-font text-cyan-300 text-sm mt-3">> Waiting for input…</p>
+                    </div>
+
+                    <!-- AI AGENT DEMO -->
+            <div class="comic-panel p-6 bg-[#151525]">
+                <h3 class="text-xl font-black text-pink-500 mb-3 font-sans">MANGA OPS AGENT</h3>
+
+                <textarea id="agent-input" class="w-full p-2 bg-black border border-pink-500 text-gray-300 h-24 text-sm"
+                placeholder="Ask: give anime recs, summarize..., rank projects, generate codename..."></textarea>
+
+                <button onclick="runAgent()" class="mt-3 w-full bg-pink-900 text-white py-2 hover:bg-pink-500 hover:text-black font-bold transition">
+                    >> DEPLOY AGENT
+                </button>
+
+                <pre id="agent-output" class="pixel-font text-pink-300 text-sm mt-3 h-32 overflow-auto">
+            > AGENT READY — awaiting mission...
+                </pre>
+
+                <p class="pixel-font text-pink-300 text-sm mt-3">> Multi-tool reasoning agent (logic-based)</p>
+            </div>
+
+
+                    <!-- EMBEDDING VISUALIZER -->
+                    <div class="comic-panel p-6 bg-[#151525]">
+                        <h3 class="text-xl font-black text-yellow-300 mb-3 font-sans">EMBEDDING MAP</h3>
+
+                        <input id="embed-input" class="w-full p-2 bg-black border border-yellow-500 text-gray-300 text-sm" placeholder="Enter text…">
+
+                        <button onclick="generateEmbedding()" class="mt-3 w-full bg-yellow-700 text-black py-2 hover:bg-yellow-400 font-bold transition">
+                            >> GENERATE VECTOR
+                        </button>
+
+                        <pre id="embed-output" class="w-full h-32 mt-4 bg-black border border-yellow-500 text-yellow-300 text-xs overflow-auto p-2"></pre>
+
+                        <p class="pixel-font text-yellow-200 text-sm mt-3">> JS-based embedding generator</p>
+                    </div>
+
+                
+                                    <!-- Robot Animation Container -->
+                    <div class="robot-container">
+                        <!-- Blue Robot (use your actual image path) -->
+                        <img src="blue.png" alt="Blue Robot" class="robot robot-blue">
+                        
+                        <!-- Pink Robot (use your actual image path) -->
+                        <img src="pink.png" alt="Pink Robot" class="robot robot-pink">
+                        
+                        <!-- Heart SVG -->
+                        <svg class="heart" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="8" width="4" height="4" fill="#ff1493"/>
+                            <rect x="20" y="8" width="4" height="4" fill="#ff1493"/>
+                            <rect x="4" y="12" width="24" height="4" fill="#ff1493"/>
+                            <rect x="4" y="16" width="24" height="4" fill="#ff69b4"/>
+                            <rect x="8" y="20" width="16" height="4" fill="#ff69b4"/>
+                            <rect x="12" y="24" width="8" height="4" fill="#ff1493"/>
+                        </svg>
+
+                        <!-- Sparkles -->
+                        <div class="sparkles">
+                            <div class="sparkle"></div>
+                            <div class="sparkle"></div>
+                            <div class="sparkle"></div>
+                            <div class="sparkle"></div>
+                            <div class="sparkle"></div>
+                            <div class="sparkle"></div>
+                        </div>
+                    </div>
+            </section>
+
 
             <!-- PAGE 06: CERTIFICATES -->
             <section id="certs" class="page-section">
@@ -721,6 +969,56 @@
                     </div>
                 </div>
             </section>
+            <!-- PAGE: NEURAL BLUEPRINTS -->
+            <section id="blueprints" class="page-section">
+                <h2 class="text-4xl md:text-6xl comic-title text-white mb-8">
+                    <span class="text-cyan-400">#</span> NEURAL BLUEPRINTS
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                    <!-- MODEL SELECTION BLUEPRINT -->
+                    <div class="comic-panel p-6 bg-[#0f0f1a]">
+                        <h3 class="text-2xl font-black text-cyan-400 mb-4 font-sans">MODEL SELECTION FLOW</h3>
+                        <ul class="space-y-2 text-gray-300 text-base font-sans">
+                            <li>> Text ↦ Transformers / LLMs</li>
+                            <li>> Vision ↦ CNN / ViT</li>
+                            <li>> Time-Series ↦ LSTM / TCN</li>
+                            <li>> Tabular ↦ XGBoost / CatBoost</li>
+                            <li>> RAG Systems ↦ Embeddings + FAISS + LLM</li>
+                        </ul>
+                        <p class="pixel-font text-pink-400 mt-4">> Blueprint: Choosing optimal architecture per domain.</p>
+                    </div>
+
+                    <!-- PIPELINE BLUEPRINT -->
+                    <div class="comic-panel p-6 bg-[#0f0f1a]">
+                        <h3 class="text-2xl font-black text-yellow-400 mb-4 font-sans">E2E ML PIPELINE</h3>
+                        <ul class="space-y-2 text-gray-300 text-base font-sans">
+                            <li>1. Data Intake → Cleaning</li>
+                            <li>2. Feature Engineering → EDA</li>
+                            <li>3. Baseline Modeling → Refinement</li>
+                            <li>4. Training → Eval → Metrics</li>
+                            <li>5. Deployment → CI/CD → Monitoring</li>
+                        </ul>
+                        <p class="pixel-font text-yellow-300 mt-4">> Blueprint: Full production workflow.</p>
+                    </div>
+
+                    <!-- AGENT ARCHITECTURE BLUEPRINT -->
+                    <div class="comic-panel p-6 bg-[#0f0f1a]">
+                        <h3 class="text-2xl font-black text-pink-500 mb-4 font-sans">AGENTIC SYSTEM DESIGN</h3>
+                        <ul class="space-y-2 text-gray-300 text-base font-sans">
+                            <li>User Query → Planner Agent</li>
+                            <li>Planner → Tool Agent (Search / API)</li>
+                            <li>Retriever → Context Assembler</li>
+                            <li>LLM → Reason → Output</li>
+                            <li>Feedback Loop → Improvement</li>
+                        </ul>
+                        <p class="pixel-font text-pink-400 mt-4">> Blueprint: Autonomous reasoning stack.</p>
+                    </div>
+
+                </div>
+            </section>
+
 
         </div>
     </main>
@@ -733,6 +1031,179 @@
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
         }
+        
     </script>
+   <script>
+/* =========================================================
+   1) SENTIMENT CLASSIFIER (RULE-BASED)
+   ========================================================= */
+
+function runSentiment() {
+    const text = document.getElementById("sent-input").value.toLowerCase();
+    const out = document.getElementById("sent-output");
+
+    if (!text.trim()) {
+        out.innerText = "> Enter text first!";
+        return;
+    }
+
+    const positiveWords = ["good", "great", "love", "awesome", "happy", "excellent", "nice"];
+    const negativeWords = ["bad", "hate", "terrible", "angry", "sad", "poor", "worst"];
+
+    let score = 0;
+
+    positiveWords.forEach(word => { if (text.includes(word)) score++; });
+    negativeWords.forEach(word => { if (text.includes(word)) score--; });
+
+    if (score > 0) out.innerText = "> POSITIVE 😊 (logic-based)";
+    else if (score < 0) out.innerText = "> NEGATIVE 😡 (logic-based)";
+    else out.innerText = "> NEUTRAL 😐 (logic-based)";
+}
+
+
+
+
+/* =========================================================
+   AI AGENT — LOGIC-BASED TOOLCHAIN
+   ========================================================= */
+
+function runAgent() {
+    const input = document.getElementById("agent-input").value.toLowerCase();
+    const out = document.getElementById("agent-output");
+
+    if (!input.trim()) {
+        out.innerText = "> Thought: No mission received.";
+        return;
+    }
+
+    // Determine intent
+    let intent = "";
+
+    if (input.includes("anime")) intent = "anime";
+    else if (input.includes("summary") || input.includes("summarize")) intent = "summary";
+    else if (input.includes("rank")) intent = "rank";
+    else if (input.includes("codename") || input.includes("name")) intent = "codename";
+    else intent = "unknown";
+
+    // Agent reasoning simulation
+    out.innerText = "> Thought: Analyzing mission...\n";
+
+    setTimeout(() => {
+        if (intent === "anime") return animeTool(out);
+        if (intent === "summary") return summaryTool(input, out);
+        if (intent === "rank") return rankTool(out);
+        if (intent === "codename") return codenameTool(out);
+
+        out.innerText += "> Agent: Unable to classify mission.\n> Suggestion: Ask about anime, summary, ranking, codename.";
+    }, 600);
+}
+
+/* ---------- TOOL 1: Anime Recommender ---------- */
+function animeTool(out) {
+    const list = [
+        "Attack on Titan — Dark, strategic, intense.",
+        "Demon Slayer — Visual masterpiece.",
+        "Steins;Gate — Time travel mind-bender.",
+        "Jujutsu Kaisen — Modern battle shonen.",
+        "Vinland Saga — Realistic, philosophical."
+    ];
+
+    out.innerText += "> Tool: anime_recommender()\n";
+    out.innerText += "> Result:\n- " + list.join("\n- ");
+}
+
+/* ---------- TOOL 2: Summary Tool ---------- */
+function summaryTool(text, out) {
+    const words = text.split(" ");
+    const summary = words.slice(0, 12).join(" ") + "...";
+
+    out.innerText += "> Tool: summarize()\n";
+    out.innerText += "> Summary: " + summary;
+}
+
+/* ---------- TOOL 3: Rank Projects ---------- */
+function rankTool(out) {
+    const ranks = [
+        "1. TechTony (IoT + K8s + EdgeX)",
+        "2. Sibyl System (Local RAG)",
+        "3. Mission to Mars (AI Game)",
+        "4. Research Copilot (MCP Agents)"
+    ];
+
+    out.innerText += "> Tool: rank_projects()\n";
+    out.innerText += "> Ranked List:\n" + ranks.join("\n");
+}
+
+/* ---------- TOOL 4: Cyberpunk Codename Generator ---------- */
+function codenameTool(out) {
+    const partsA = ["NEON", "CYBER", "OMEGA", "GHOST", "SHADOW", "PHANTOM"];
+    const partsB = ["BLADE", "SPECTER", "RIPPER", "SHIFT", "ECHO", "STRYKER"];
+
+    const name = 
+        partsA[Math.floor(Math.random() * partsA.length)] + "-" +
+        partsB[Math.floor(Math.random() * partsB.length)];
+
+    out.innerText += "> Tool: codename_gen()\n";
+    out.innerText += "> Codename Assigned: " + name;
+}
+
+
+
+
+/* =========================================================
+   3) EMBEDDING GENERATOR (LOGIC-BASED VECTOR)
+   ========================================================= */
+
+function generateEmbedding() {
+    const text = document.getElementById("embed-input").value;
+    const out = document.getElementById("embed-output");
+
+    if (!text.trim()) {
+        out.innerText = "Enter text first!";
+        return;
+    }
+
+    // Convert characters → numeric pseudo-embedding
+    const vector = Array.from(text)
+        .map(ch => (ch.charCodeAt(0) % 50) / 50)
+        .slice(0, 20);
+
+    // Pad to 20 dimensions
+    while (vector.length < 20) vector.push(0);
+
+    out.innerText = JSON.stringify(vector, null, 2);
+}
+</script>
+<script>
+async function loadResearchPapers() {
+    const list = document.getElementById("latest-papers");
+
+    try {
+        const res = await fetch("research.json");
+        const data = await res.json();
+
+        list.innerHTML = ""; // clear loading text
+
+        data.papers.forEach(paper => {
+            const item = `
+                <li>
+                    > <span class="text-white font-bold">${paper.title}</span>
+                      — <span class="italic text-gray-400">${paper.summary}</span>
+                      <br>
+                      <span class="pixel-font text-green-300 text-xs">[ ${paper.tags.join(", ")} ]</span>
+                </li>
+            `;
+            list.innerHTML += item;
+        });
+    } catch (err) {
+        list.innerHTML = "<li>> Error loading research.json</li>";
+    }
+}
+
+// Initialize after page load
+loadResearchPapers();
+</script>
+
+
 </body>
 </html>
